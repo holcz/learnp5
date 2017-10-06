@@ -64,7 +64,7 @@ function Breaker() {
   this.position = createVector(360, 370);
   this.width = 70;
   this.height = 10;
-  this.speed = createVector(5,0);
+  this.speed = createVector(9, 0);
 
   this.draw = function() {
     rect(this.position.x, this.position.y, this.width, this.height);
@@ -84,11 +84,19 @@ function Breaker() {
       this.position.add(this.speed);
     }
   }
+
+  this.moveLeft = function() {
+      this.position.sub(this.speed);
+  }
+
+  this.moveRight = function() {
+      this.position.add(this.speed);
+  }
 }
 
 function Ball(x, y, speed, size) {
     this.width = this.height = size ? size : 10;
-    this.speedVector = createVector(4, 5);
+    this.speedVector = createVector(2, 3);
     this.position = createVector(x, y);
 
     this.draw = function() {
@@ -279,3 +287,32 @@ function draw() {
       break;
   }
 }
+
+// Enable pusher logging - don't include this in production
+Pusher.logToConsole = true;
+var pusherKey = ''
+
+var pusher = new Pusher(pusherKey, {
+    cluster: 'eu',
+    encrypted: true
+});
+
+var channel = pusher.subscribe('breakout-channel');
+channel.bind('left', function(data) {
+    breaker.moveLeft();
+    console.log('left');
+});
+
+channel.bind('right', function(data) {
+    breaker.moveRight();
+    console.log('right');
+});
+
+
+channel.bind('start', function(data) {
+    if (state != states.PLAY) {
+        state = states.PLAY;
+        init();
+    }
+    console.log('start');
+});
